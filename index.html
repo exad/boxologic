@@ -1,0 +1,93 @@
+<html>
+<head>
+<script>
+var canvas;
+var context;
+var itemArray = [];
+var data = [];
+
+function Item(x, y, height, width) {
+	this.x = x;
+	this.y = y;
+	this.height = height;
+	this.width = width;
+
+	this.getWidth = function() {
+		return this.width;
+	};
+	this.getHeight = function() {
+		return this.height;
+	};
+	this.getX = function() { 
+		return this.x;
+	};
+	this.getY = function() {
+		return this.y;
+	};
+}
+
+function draw() {
+	canvas = document.getElementById('canvas');
+    context = canvas.getContext('2d');
+
+    retrieveFile();    
+}
+
+function retrieveFile()
+{
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'visudat', true);
+
+	// Hack to pass bytes through unprocessed.
+	xhr.overrideMimeType('text/plain; charset=x-user-defined');
+
+	xhr.onreadystatechange = function(e) {
+	  if (this.readyState == 4 && this.status == 200) {
+	    var binStr = this.responseText;	    
+	    var splitArray = binStr.split("\n");
+
+	    for(var i=0;i<splitArray.length;i++) {
+	    	var lineArray = splitArray[i].split(/[ ]+/);
+	    	if (i===0) {
+	    		//Container
+	    		itemArray.push(new Item(0,0, lineArray[2], lineArray[1]));	    		
+	    	} else {
+	    		//Items
+	    		lineArray.splice(0,1);
+	    		lineArray.splice(2,1);
+
+	    		itemArray.push(new Item(lineArray[0],lineArray[1], lineArray[3], lineArray[2]));
+	    	}	    	
+	    }
+
+    	renderItems();
+	  }
+	};
+
+	xhr.send();
+
+    
+}
+
+function renderItems() {
+	console.log(itemArray);
+
+	for(var i=0;i<itemArray.length;i++) {
+	  context.beginPath();
+      context.rect(itemArray[i].getX(), itemArray[i].getY(), itemArray[i].getWidth(), itemArray[i].getHeight());
+      context.fillStyle = 'yellow';
+      context.fill();
+      context.lineWidth = 1;
+      context.strokeStyle = 'black';
+      context.stroke();
+  }
+}
+
+window.onload = draw;
+</script>
+</head>
+<body>
+<canvas id="canvas" width="2000" height="2000">
+</canvas>
+</body>
+</html>
